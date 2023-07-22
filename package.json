@@ -1,0 +1,32 @@
+{
+  "name": "morcichat_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QSYSMoric/MorciChat_Server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/QSYSMoric/MorciChat_Server/issues"
+  },
+  "homepage": "https://github.com/QSYSMoric/MorciChat_Server#readme",
+  "dependencies": {
+    "connect-history-api-fallback": "^2.0.0",
+    "cookie-parser": "^1.4.6",
+    "dayjs": "^1.11.9",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-handlebars": "^7.1.0",
+    "jsonwebtoken": "^9.0.1",
+    "mysql": "^2.18.1",
+    "nodemon": "^3.0.1",
+    "socket.io": "^4.7.1"
+  }
+}
