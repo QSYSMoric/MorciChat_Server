@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
@@ -15,6 +16,10 @@ app.use(express.json({limit: '50mb',extended:true}));
 const secretKey = "Moric";//密钥
 const cookieParser=require("cookie-parser");
 app.use(cookieParser(secretKey));
+
+//处理请求
+const routes = require("./server/routers/user");
+app.use('/moric',routes);
 
 //处理未找到
 app.all('/',(req,res)=>{
