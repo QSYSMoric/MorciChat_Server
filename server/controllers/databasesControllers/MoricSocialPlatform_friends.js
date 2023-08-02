@@ -5,58 +5,52 @@ let connection = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: process.env.DB_TABLE_USERS,
+    database: process.env.DB_TABLE_FRIENDS,
 });
+
 // 测试连接
 connection.connect(err=>{
     if(err){
         console.log(err);
-        console.log("用户数据库连接失败");
+        console.log("好友数据库连接失败");
     }else{
-        console.log('用户数据库连接成功');
+        console.log('好友数据库连接成功');
     }
 });
 
-//查询
-const selectUser = async function(sql,field){
+//增加表操作
+const createFriendTable = async function(sql){
     return new Promise((resolve,reject)=>{
-        connection.query(sql,field,function(err,rows){
+        connection.query(sql,function(err,rows){
+            //创建表失败后的结果
             if(err){
-                //没有查询到用户账户   
                 return reject({ 
                     code:"3100",
-                    alert:'查询失败:' + err,
-                    state:false,
-                    userMsg:null
-                });           
-            };
-            if(rows.length <= 0){
-                return resolve({ 
-                    code:"3100",
-                    alert:'没有这个账号',
+                    alert:'创建好友列表失败:' + err,
                     state:false,
                     userMsg:null
                 });
             };
+            //创建表成功后的结果
             return resolve({
                 code:"1000",
-                alert:'成功',
+                alert:'创建好友列表成功',
                 state:true,
-                userMsg:rows[0]
+                userMsg:rows
             });
         });
     });
 }
 
-//插入
-const createUser = async function(sql,field){
+//插入数据操作
+const insertIntoFriend = async function(sql,field){
     return new Promise((resolve,reject)=>{
         connection.query(sql,field,function(err,rows){
             //插入数据失败后的结果
             if(err){
                 return reject({ 
                     code:"3100",
-                    alert:'注册失败' + err,
+                    alert:'添加好友失败:' + err,
                     state:false,
                     userMsg:null
                 });
@@ -64,7 +58,7 @@ const createUser = async function(sql,field){
             //插入数据成功后的结果
             return resolve({
                 code:"1000",
-                alert:'成功',
+                alert:'请求已经发过去了',
                 state:true,
                 userMsg:rows
             });
@@ -73,6 +67,6 @@ const createUser = async function(sql,field){
 }
 
 module.exports = {
-    selectUser,
-    createUser
+    createFriendTable,
+    insertIntoFriend
 }

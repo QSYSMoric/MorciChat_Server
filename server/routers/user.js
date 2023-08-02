@@ -6,4 +6,5 @@ const userController = require('../controllers/userController');
 // router.use();
 //注册按钮
 router.post('/register',userController.createUser);
+router.post('/login',userController.loginUser);
 module.exports = router;

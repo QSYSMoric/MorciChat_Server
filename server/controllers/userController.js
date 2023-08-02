@@ -3,6 +3,8 @@ const userAuthentication = require("../utils/userAuthentication");
 const day = require("../../plugins/day");
 const Moric_users = require("../controllers/databasesControllers/MoricSocialPlatform_users");
 const imageProcessing = require("../utils/imageProcessing");
+const userAdditionalOperations = require("../additionalOperations/userAdditionalOperations");
+const ResponseObj = require("../../plugins/responseMessage");
 //注册处理
 exports.createUser = async function(req,res){
     let { userName,userEmail,userPassword,userProfile,userProfileType } = req.body;
@@ -29,9 +31,11 @@ exports.createUser = async function(req,res){
             //设置cookie为登录状态
             res.cookie("isLoggedin",true);
             const { userMsg } = data;
+            //注册的额外操作
+            userAdditionalOperations.RegisterAdditionalActions(userMsg.insertId);
             const token = userAuthentication.createToken({userId:userMsg.insertId});
             return res.json({
-                code:"1000",
+                code:1000,
                 alertMsg:'注册成功',
                 state:true,
                 body:{
@@ -41,7 +45,7 @@ exports.createUser = async function(req,res){
             });
         }).catch(err=>{
             return res.json({
-                code:"3100",
+                code:3100,
                 state:false,
                 alertMsg:err.alert,
                 body:null
@@ -50,10 +54,38 @@ exports.createUser = async function(req,res){
     }).catch(err=>{
         //数据库出错
         return res.json({
-            code:"3100",
+            code:3100,
             state:false,
             alertMsg:err.alert,
             body:null
         });
     });
-}
+};
+exports.loginUser = async function(req, res) {
+    try {
+        let { userId, userPassword } = req.body;
+        let loginQuery = null;
+        if (userId.includes('@')) {
+            loginQuery = "SELECT userPassword FROM users WHERE userEmail = ? ";
+        } else {
+            loginQuery = "SELECT userPassword FROM users WHERE userId = ? ";
+        }
+        const data = await Moric_users.selectUser(loginQuery, [userId]);
+        if (!data.state) {
+            console.log("查询失败");
+            return res.json(new ResponseObj(2000, false, "登录失败"));
+        }
+        const { userMsg } = data;
+        //密码错误操作
+        if (userMsg.userPassword != userPassword) {
+            return res.json(new ResponseObj(2000, false, "登录失败"));
+        }
+        res.cookie("isLoggedin", true);
+        const token = userAuthentication.createToken({ userId });
+        return res.json(new ResponseObj(1000, true, "登录成功", {token}));
+    } catch (err) {
+        // 处理错误
+        console.error(err);
+        return res.json(new ResponseObj(2000, false, "登录失败"));
+    }
+};
