@@ -20,8 +20,8 @@ const checkTokenMiddleware = (req,res,next)=>{
     //没有token令牌
     if(!token){
         return res.json({
-            code:"2600",
-            alert:"你还没有登录",
+            code:2600,
+            alertMsg:"你还没有登录",
             state:false,
             data:null
         });
@@ -30,8 +30,8 @@ const checkTokenMiddleware = (req,res,next)=>{
     jwt.verify(token,secretKey,(err,data)=>{
         if(err){
             return res.json({
-                code:"2100",
-                alert:"验证出错",
+                code:2100,
+                alertMsg:"验证出错",
                 state:false,
                 data:null
             });

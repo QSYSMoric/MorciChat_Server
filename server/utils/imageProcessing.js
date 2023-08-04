@@ -1,6 +1,6 @@
 
 function base64ToBinary(base64String) {
-    // 去除 Base64 字符串中的前缀部分（例如："data:image/jpeg;base64,"）
+    // 去除 Base64 字符串中的前缀部分"data:image/jpeg;base64,"
     const encodedData = base64String.split(',')[1];
     // 将 Base64 字符串解码为二进制数据
     const binaryData = Buffer.from(encodedData, 'base64');

@@ -27,7 +27,7 @@ exports.createUser = async function(req,res){
         const timing = day.nowTime();
         const insertSql = "INSERT INTO `users` (userName, userEmail, userPassword, userProfile, userProfileType, userCreateAt) VALUES (?, ?, ?, ?, ?, ?);"
         const createUserPromise = Moric_users.createUser(insertSql,[userName,userEmail,userPassword,userProfile,userProfileType,timing]);
-        createUserPromise.then((data)=>{
+        await createUserPromise.then((data)=>{
             //设置cookie为登录状态
             res.cookie("isLoggedin",true);
             const { userMsg } = data;
@@ -61,19 +61,20 @@ exports.createUser = async function(req,res){
         });
     });
 };
-exports.loginUser = async function(req, res) {
+//登录处理
+exports.loginUser = async function(req,res) {
     try {
         let { userId, userPassword } = req.body;
         let loginQuery = null;
         if (userId.includes('@')) {
-            loginQuery = "SELECT userPassword FROM users WHERE userEmail = ? ";
+            loginQuery = "SELECT userPassword,userId FROM users WHERE userEmail = ? ";
         } else {
-            loginQuery = "SELECT userPassword FROM users WHERE userId = ? ";
+            loginQuery = "SELECT userPassword,userId FROM users WHERE userId = ? ";
         }
         const data = await Moric_users.selectUser(loginQuery, [userId]);
         if (!data.state) {
             console.log("查询失败");
-            return res.json(new ResponseObj(2000, false, "登录失败"));
+            throw new Error("查询失败");
         }
         const { userMsg } = data;
         //密码错误操作
@@ -81,7 +82,7 @@ exports.loginUser = async function(req, res) {
             return res.json(new ResponseObj(2000, false, "登录失败"));
         }
         res.cookie("isLoggedin", true);
-        const token = userAuthentication.createToken({ userId });
+        const token = userAuthentication.createToken({ userId:userMsg.userId });
         return res.json(new ResponseObj(1000, true, "登录成功", {token}));
     } catch (err) {
         // 处理错误
@@ -89,3 +90,23 @@ exports.loginUser = async function(req, res) {
         return res.json(new ResponseObj(2000, false, "登录失败"));
     }
 };
+//个人信息处理
+exports.getUserInformation = async function(req,res){
+    try{
+        const { userId } = req.userDate;
+        let selectSql = "SELECT userId,userName,userProfile,userProfileType,userEmail,userAge,userSignature FROM users WHERE userId = ? "
+        const data = await Moric_users.selectUser(selectSql, [userId]);
+        if (!data.state) {
+            throw new Error("查询失败服务器出错");
+        }
+        const { userMsg } = data;
+        if(userMsg.userProfile){
+            userMsg.userProfile = imageProcessing.binaryToBase64(userMsg.userProfile);
+        }
+        return res.json(new ResponseObj(1000,true,"获取成功",userMsg));
+    }catch (err) {
+        // 处理错误
+        console.log(err.message);
+        return res.json(new ResponseObj(2000, false, err.message));
+    }
+}
