@@ -2,6 +2,7 @@
 const userAuthentication = require("../utils/userAuthentication");
 const day = require("../../plugins/day");
 const Moric_users = require("../controllers/databasesControllers/MoricSocialPlatform_users");
+const Moric_Friendcircle = require("../controllers/databasesControllers/MoricSocialPlatForm_friendcircle");
 const imageProcessing = require("../utils/imageProcessing");
 const userAdditionalOperations = require("../additionalOperations/userAdditionalOperations");
 const ResponseObj = require("../../plugins/responseMessage");
@@ -109,4 +110,4 @@ exports.getUserInformation = async function(req,res){
         console.log(err.message);
         return res.json(new ResponseObj(2000, false, err.message));
     }
-}
+};
