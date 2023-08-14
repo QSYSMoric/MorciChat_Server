@@ -1,13 +1,14 @@
-const idTranslator = require("./IdTranslator");
+const OnlineUsersTable = require("../onlineUsersControllers");
 
+//创建在线用户表
+const onlineUsers = new OnlineUsersTable("onlineUsers");
+onlineUsers.clearUserList();
 module.exports = (socket)=>{
-    console.log(socket.userDate.userId + "连接服务器了");
+    // onlineUsers.addUser(socket.userDate);
+    // onlineUsers.getUserList().then((data)=>{
+    //     console.log(data);
+    // });
     socket.on("disconnect", (reason) => {
         console.log("用户断开");
     });
-    const idMapping  = new idTranslator();
-    idMapping.addMapping(socket.id,socket.userDate.userId);
-    console.log(idMapping.getId(socket.id))
-    console.log(idMapping.getId(socket.userDate.userId.toString()));
-    socket.emit("success","连接成功");
 }

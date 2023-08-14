@@ -9,4 +9,5 @@ const userAuthentication = require('../utils/userAuthentication');
 router.post('/register',userController.createUser);
 router.post('/login',userController.loginUser);
 router.post('/getUserInformation',userAuthentication.checkTokenMiddleware,userController.getUserInformation);
+router.post('/publishMoments',userAuthentication.checkTokenMiddleware,userController.publishMoments)
 module.exports = router;

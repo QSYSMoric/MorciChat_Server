@@ -3,9 +3,11 @@ const userAuthentication = require("../utils/userAuthentication");
 const day = require("../../plugins/day");
 const Moric_users = require("../controllers/databasesControllers/MoricSocialPlatform_users");
 const Moric_Friendcircle = require("../controllers/databasesControllers/MoricSocialPlatForm_friendcircle");
+const MoricSocialPlatForm_comments = require("../controllers/databasesControllers/MoricSocialPlatForm_comments");
 const imageProcessing = require("../utils/imageProcessing");
 const userAdditionalOperations = require("../additionalOperations/userAdditionalOperations");
 const ResponseObj = require("../../plugins/responseMessage");
+const Moric_Moments = require("../class/Moric_Moments");
 //注册处理
 exports.createUser = async function(req,res){
     let { userName,userEmail,userPassword,userProfile,userProfileType } = req.body;
@@ -111,3 +113,39 @@ exports.getUserInformation = async function(req,res){
         return res.json(new ResponseObj(2000, false, err.message));
     }
 };
+//用户发布社区动态
+exports.publishMoments = async function(req,res){
+    try{
+        const { friendCircleImg,friendCircleCopy } = req.body;
+        if(friendCircleImg.length){
+            friendCircleImg.forEach((element,index)=>{
+                friendCircleImg[index] = imageProcessing.base64ToBinary(element);
+            });
+        }
+        //构建朋友圈对象
+        let commentsObj = new Moric_Moments(req.userDate.userId,day.nowTime(),friendCircleCopy,friendCircleImg);
+        let sql = "INSERT INTO `friend_circle` (publisher, publicTiming, friendCircleCopy, friendCirclePictures ) VALUES (?, ?, ?, ?);";
+        //插入朋友圈
+        Moric_Friendcircle.createFriendcircle(sql,[commentsObj.publisher,commentsObj.publishTiming,commentsObj.friendCircleCopy,JSON.stringify(commentsObj.friendCircleImg)]).then((data)=>{
+            //为动态安装评论区
+            commentsObj.setMomentsId(data.body.insertId);
+            MoricSocialPlatForm_comments.createComment(data.body.insertId).then((data)=>{
+                commentsObj.setCommentformationId(data.body.id);
+                Moric_Friendcircle.installationComment(commentsObj.publishId,commentsObj.commentformationId).then(()=>{
+                    //释放内存
+                    commentsObj = null;
+                    return res.json(new ResponseObj(1000,true,"发布成功"));
+                }).catch((err)=>{
+                    throw new Error(err);
+                });
+            }).catch((err)=>{
+                throw new Error(err);
+            });
+        }).catch((err)=>{
+            throw new Error(err);
+        });
+    }catch(err){
+        console.log(err.message);
+        return res.json(new ResponseObj(2000,false,"发生了意料之外的错误"),err.message);
+    }
+}
