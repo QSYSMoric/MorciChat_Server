@@ -39,8 +39,6 @@ const createComment = async function(momentsId){
                 console.log(err.message);
                 return reject(new responseMessage(3100,false,err.message,null));
             }
-
-        
             return resolve(new responseMessage(1000,true,"发布成功",{id:`comment_${momentsId}`}));
         });
     });

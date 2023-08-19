@@ -8,6 +8,8 @@ const socketWrapper = require('./server/utils/socketWrapper');
 const io = socketWrapper(server);
 // 挂载 io 到全局
 app.locals.io = io;
+// 存储 io 对象到全局
+global.io = io;
 
 //模板引擎
 const exphbs = require('express-handlebars');

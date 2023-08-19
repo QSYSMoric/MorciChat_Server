@@ -8,6 +8,7 @@ const imageProcessing = require("../utils/imageProcessing");
 const userAdditionalOperations = require("../additionalOperations/userAdditionalOperations");
 const ResponseObj = require("../../plugins/responseMessage");
 const Moric_Moments = require("../class/Moric_Moments");
+const Moric_UserInfo = require("../class/Moric_UserInfo");
 //注册处理
 exports.createUser = async function(req,res){
     let { userName,userEmail,userPassword,userProfile,userProfileType } = req.body;
@@ -35,7 +36,7 @@ exports.createUser = async function(req,res){
             res.cookie("isLoggedin",true);
             const { userMsg } = data;
             //注册的额外操作
-            userAdditionalOperations.RegisterAdditionalActions(userMsg.insertId);
+            userAdditionalOperations.registerAdditionalActions(userMsg.insertId);
             const token = userAuthentication.createToken({userId:userMsg.insertId});
             return res.json({
                 code:1000,
@@ -126,13 +127,14 @@ exports.publishMoments = async function(req,res){
         let commentsObj = new Moric_Moments(req.userDate.userId,day.nowTime(),friendCircleCopy,friendCircleImg);
         let sql = "INSERT INTO `friend_circle` (publisher, publicTiming, friendCircleCopy, friendCirclePictures ) VALUES (?, ?, ?, ?);";
         //插入朋友圈
-        Moric_Friendcircle.createFriendcircle(sql,[commentsObj.publisher,commentsObj.publishTiming,commentsObj.friendCircleCopy,JSON.stringify(commentsObj.friendCircleImg)]).then((data)=>{
+        Moric_Friendcircle.createFriendcircle(sql,[commentsObj.publisherId,commentsObj.publishTiming,commentsObj.friendCircleCopy,JSON.stringify(commentsObj.friendCircleImg)]).then((data)=>{
             //为动态安装评论区
             commentsObj.setMomentsId(data.body.insertId);
             MoricSocialPlatForm_comments.createComment(data.body.insertId).then((data)=>{
                 commentsObj.setCommentformationId(data.body.id);
                 Moric_Friendcircle.installationComment(commentsObj.publishId,commentsObj.commentformationId).then(()=>{
                     //释放内存
+                    userAdditionalOperations.publishMomentsAdditionalActions(commentsObj);
                     commentsObj = null;
                     return res.json(new ResponseObj(1000,true,"发布成功"));
                 }).catch((err)=>{
@@ -147,5 +149,49 @@ exports.publishMoments = async function(req,res){
     }catch(err){
         console.log(err.message);
         return res.json(new ResponseObj(2000,false,"发生了意料之外的错误"),err.message);
+    }
+}
+//获取最新的10条数据
+exports.getNewMoments = async function(req,res){
+    try{
+        let { timing } = req.body;
+        if(!timing){
+            timing = day.nowTime();
+        }
+        Moric_Friendcircle.pagingCommentList(timing).then((data)=>{
+            data.body.forEach((element)=>{
+                let { friendCirclePictures } = element;
+                friendCirclePictures = JSON.parse(friendCirclePictures)
+                friendCirclePictures.forEach((element,index)=>{
+                    friendCirclePictures[index] = imageProcessing.binaryToBase64(element.data);
+                });
+                element.friendCirclePictures = friendCirclePictures;
+            });
+            return res.json(new ResponseObj(1000,true,"请求成功",data.body));
+        }).catch((err)=>{
+            throw err;
+        });
+    }catch(err){
+        console.log("getNewMoments出错:" + err.message);
+        return res.json(new ResponseObj(2000,false,"发生了意料之外的错误"),err.message); 
+    }
+}
+//获取用户信息
+exports.pickInformation = async function(req,res){
+    try {
+        const { userId } = req.body;
+        let sql = "SELECT userId, userName, userProfile, userProfileType, userEmail, userAge, userSignature FROM users WHERE userId = ?;"
+        const data = Moric_users.selectUser(sql,[userId]);
+        data.then((data)=>{
+            const { userMsg } = data;
+            let userInfo = new Moric_UserInfo(userMsg.userId,userMsg.userName,userMsg.userProfile,userMsg.userProfileType,userMsg.userEmail,userMsg.userAge,userMsg.userSignature);
+            return res.json(new ResponseObj(1000, true, "成功",userInfo));
+        }).catch((err)=>{
+            throw new Error(err.message);
+        });
+    } catch (error) {
+        // 处理错误
+        console.log("pickInformationErr:"+error.message);
+        return res.json(new ResponseObj(2000, false, error.message));
     }
 }

@@ -48,7 +48,28 @@ const installationComment = async function(momentsId,commentInformationId) {
     });
 }
 
+//查询某个时间之前的10条动态
+const pagingCommentList = async function(timing){
+    if(!timing){
+        return Promise.reject(new responseMessage(3100, false, "发生错误", null));
+    }
+    let sql = `
+    SELECT publishId, publisher, publicTiming, friendCircleCopy, friendCirclePictures, commentInformation FROM friend_circle
+    WHERE publicTiming < '${timing}'
+    ORDER BY publicTiming DESC
+    LIMIT 5;`
+    return new Promise((resolve, reject)=>{
+        connection.query(sql,function(err,rows){
+            if(err){
+                return reject(new responseMessage(3100, false, err.message, null));
+            }
+            return resolve(new responseMessage(1000,true,"查询成功",rows));
+        })
+    })
+}
+
 module.exports = {
     createFriendcircle,
-    installationComment
+    installationComment,
+    pagingCommentList
 }

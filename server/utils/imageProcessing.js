@@ -8,7 +8,16 @@ function base64ToBinary(base64String) {
     return binaryData;
 }
 
-function binaryToBase64(buffer) {
+function binaryToBase64(data) {
+    let buffer;
+    // 检查传入的参数类型，并转换为 Buffer 对象
+    if (Array.isArray(data)) {
+      buffer = Buffer.from(data);
+    } else if (Buffer.isBuffer(data)) {
+      buffer = data;
+    } else {
+      throw new Error('传入的参数不是有效的 Buffer 或二进制数组');
+    }
     // 将 Buffer 对象转换为 Base64 字符串
     const base64String = buffer.toString('base64');
     // 添加前缀，这是可选的，取决于您的需求

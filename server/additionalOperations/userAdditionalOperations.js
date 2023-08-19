@@ -1,8 +1,9 @@
 const MoricSocialPlatform_friends = require("../controllers/databasesControllers/MoricSocialPlatform_friends");
 const nowTime = require("../../plugins/day");
+
 module.exports = {
     //注册中的额外操作
-    async RegisterAdditionalActions(userId){
+    async registerAdditionalActions(userId){
         //创建独属于它的表
         let createFriendListSql = `CREATE TABLE ${userId}FriendList (
             id INT NOT NULL AUTO_INCREMENT,
@@ -31,5 +32,10 @@ module.exports = {
             console.log(err);
         });
         return Promise.resolve(console.log("操作结束"));
+    },
+    //发布动态的时候额外操作
+    async publishMomentsAdditionalActions(newMoment){
+        const io = global.io;
+        io.emit("newComent", newMoment);
     }
 }

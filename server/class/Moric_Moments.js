@@ -1,6 +1,6 @@
 class Moric_Moments{
     constructor(id,timing,friendCircleCopy,friendCircleImg){
-        this.publisher = id;
+        this.publisherId = id;
         this.publishTiming = timing;
         this.friendCircleCopy = friendCircleCopy;
         this.friendCircleImg = friendCircleImg;
