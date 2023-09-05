@@ -9,6 +9,7 @@ const userAdditionalOperations = require("../additionalOperations/userAdditional
 const ResponseObj = require("../../plugins/responseMessage");
 const Moric_Moments = require("../class/Moric_Moments");
 const Moric_UserInfo = require("../class/Moric_UserInfo");
+const Moric_Comment = require("../class/Moric_Comment");
 //注册处理
 exports.createUser = async function(req,res){
     let { userName,userEmail,userPassword,userProfile,userProfileType } = req.body;
@@ -99,7 +100,7 @@ exports.getUserInformation = async function(req,res){
     try{
         const { userId } = req.userDate;
         let selectSql = "SELECT userId,userName,userProfile,userProfileType,userEmail,userAge,userSignature FROM users WHERE userId = ? "
-        const data = await Moric_users.selectUser(selectSql, [userId]);
+        const data = await Moric_users.selectUser(selectSql, [userId])
         if (!data.state) {
             throw new Error("查询失败服务器出错");
         }
@@ -110,7 +111,7 @@ exports.getUserInformation = async function(req,res){
         return res.json(new ResponseObj(1000,true,"获取成功",userMsg));
     }catch (err) {
         // 处理错误
-        console.log(err.message);
+        console.log("getUserInformation出错："+ err.message);
         return res.json(new ResponseObj(2000, false, err.message));
     }
 };
@@ -147,7 +148,7 @@ exports.publishMoments = async function(req,res){
             throw new Error(err);
         });
     }catch(err){
-        console.log(err.message);
+        console.log("publishMoments出错:" + err.message);
         return res.json(new ResponseObj(2000,false,"发生了意料之外的错误"),err.message);
     }
 }
@@ -193,5 +194,33 @@ exports.pickInformation = async function(req,res){
         // 处理错误
         console.log("pickInformationErr:"+error.message);
         return res.json(new ResponseObj(2000, false, error.message));
+    }
+}
+//获取评论列表
+exports.getComments = async function(req,res){
+    const { momentId } = req.body;
+    try {
+        const dataInfo = await MoricSocialPlatForm_comments.getCommentsById(momentId);
+        if(!dataInfo.state){
+            throw new Error(dataInfo.alertMsg);
+        }
+        return res.json(dataInfo);
+    } catch (error) {
+        return res.json(new ResponseObj(2000, false, error.message));    
+    }
+}
+//用户发布评论
+exports.setComments = async function(req,res){
+    const { comment } = req.body;
+    const commentsObj = new Moric_Comment(comment.user_id,day.nowTime(),comment.text_content,comment.comment_img,comment.dynamic_id);
+    try {
+        const dataInfo = await MoricSocialPlatForm_comments.postCommentsToMoment(commentsObj);
+        if(!dataInfo){
+            throw new Error(dataInfo);
+        }
+        return res.json(new ResponseObj(1000,true,"发表成功",{}));
+    } catch (error) {
+        console.log("setCommentsErr:",error.message);
+        return res.json(new ResponseObj(3100,false,"发布成功",error.message));
     }
 }

@@ -12,4 +12,6 @@ router.post('/getUserInformation',userAuthentication.checkTokenMiddleware,userCo
 router.post('/publishMoments',userAuthentication.checkTokenMiddleware,userController.publishMoments);
 router.post('/getNewMoments',userAuthentication.checkTokenMiddleware,userController.getNewMoments);
 router.post('/pickInformation',userAuthentication.checkTokenMiddleware,userController.pickInformation);
+router.post('/getComments',userAuthentication.checkTokenMiddleware,userController.getComments);
+router.post('/setComments',userAuthentication.checkTokenMiddleware,userController.setComments);
 module.exports = router;
