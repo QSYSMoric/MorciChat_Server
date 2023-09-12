@@ -1,5 +1,5 @@
 //初始化
-const redisClient = require("./redis/index");
+const redisClient = require("../redis/index");
 
 class OnlineUsersTable {
     //创建列表
@@ -27,7 +27,10 @@ class OnlineUsersTable {
     //获取在线用户列表
     async getUserList(){
         try{
-            let userList = redisClient.sMembers(this.Setname);
+            let userList = await redisClient.sMembers(this.Setname);
+            userList.forEach((element,index)=>{
+                userList[index] = JSON.parse(element);
+            });
             return Promise.resolve(userList);
         }catch(err){
             console.log(err.message);

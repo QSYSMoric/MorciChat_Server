@@ -48,7 +48,7 @@ const getCommentsById = async function(momentsId){
     if(!momentsId){
         return Promise.reject(new ResponseMessage(3100,false,"发生意料之外的错误",null));
     }
-    let sql = `SELECT user_id,timing,text_content,comment_img,dynamic_id FROM comment_${momentsId}`
+    let sql = `SELECT user_id,timing,text_content,comment_img,dynamic_id FROM comment_${momentsId} ORDER BY timing DESC`
     return  new Promise((resolve,reject)=>{
         connection.query(sql,function(err,rows){
             if(err){

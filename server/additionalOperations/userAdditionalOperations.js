@@ -1,5 +1,8 @@
 const MoricSocialPlatform_friends = require("../controllers/databasesControllers/MoricSocialPlatform_friends");
 const nowTime = require("../../plugins/day");
+const sortAndJoin = require("../utils/sortAndJoin");
+//全局socket
+const io = global.io;
 
 module.exports = {
     //注册中的额外操作
@@ -22,7 +25,8 @@ module.exports = {
             let inseretInToGroupChat = `
                 INSERT INTO ${userId}FriendList (userId,friendId,createdAt,chatHistory,friendStatus) VALUES (?,?,?,?,?);
             `;
-            const insertIntoFriend = MoricSocialPlatform_friends.insertIntoFriend(inseretInToGroupChat,[userId,90000,timeing,"90000","confirmed"]);
+            const chatHistoryId = sortAndJoin(userId,90000);
+            const insertIntoFriend = MoricSocialPlatform_friends.insertIntoFriend(inseretInToGroupChat,[userId,90000,timeing,chatHistoryId,"confirmed"]);
             insertIntoFriend.then((data)=>{
                 console.log(data);
             }).catch((err)=>{
@@ -35,7 +39,10 @@ module.exports = {
     },
     //发布动态的时候额外操作
     async publishMomentsAdditionalActions(newMoment){
-        const io = global.io;
-        io.emit("newComent", newMoment);
+        io.emit("newMoment", newMoment);
+    },
+    //发表评论的时候的额外操作
+    async publishCommentsAdditionalActions(newComment){
+        io.emit("newComment", newComment);
     }
 }

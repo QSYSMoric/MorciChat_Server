@@ -1,5 +1,6 @@
 //路由数据的传递，目的：做到了路由信息和数据信息的分离
 const mysql = require('mysql');
+const ResponseMessage = require("../../../plugins/responseMessage");
 //连接数据库
 let connection = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -66,7 +67,28 @@ const insertIntoFriend = async function(sql,field){
     });
 }
 
+//获取朋友圈列表
+const getFriendList = async function(userId){
+    if(!userId){
+        return Promise.reject(new ResponseMessage(3100,false,"id不可为空",{}));
+    }
+    return new Promise((resolve,reject)=>{
+        let sql = `
+            SELECT friendId, remark, chatHistory, friendStatus
+            FROM ${userId}friendlist
+            WHERE friendStatus = 'confirmed';
+        `;
+        connection.query(sql,function(err,rows){
+            if(err){
+                return reject(new ResponseMessage(3100,false,"数据库出错",{}));
+            }
+            return resolve(new ResponseMessage(1000,true,"成功",rows));
+        });
+    });
+}
+
 module.exports = {
     createFriendTable,
-    insertIntoFriend
+    insertIntoFriend,
+    getFriendList
 }

@@ -3,6 +3,8 @@ const userAuthentication = require("../utils/userAuthentication");
 const day = require("../../plugins/day");
 const Moric_users = require("../controllers/databasesControllers/MoricSocialPlatform_users");
 const Moric_Friendcircle = require("../controllers/databasesControllers/MoricSocialPlatForm_friendcircle");
+const Moric_Historychatlog = require("../controllers/databasesControllers/MoricSocialPlatForm_historyChatLog");
+const MoricSocialPlatform_friends = require("../controllers/databasesControllers/MoricSocialPlatform_friends");
 const MoricSocialPlatForm_comments = require("../controllers/databasesControllers/MoricSocialPlatForm_comments");
 const imageProcessing = require("../utils/imageProcessing");
 const userAdditionalOperations = require("../additionalOperations/userAdditionalOperations");
@@ -79,12 +81,12 @@ exports.loginUser = async function(req,res) {
         const data = await Moric_users.selectUser(loginQuery, [userId]);
         if (!data.state) {
             console.log("查询失败");
-            throw new Error("查询失败");
+            throw new Error("账户不存在");
         }
         const { userMsg } = data;
         //密码错误操作
         if (userMsg.userPassword != userPassword) {
-            return res.json(new ResponseObj(2000, false, "登录失败"));
+            throw new Error("密码错误");
         }
         res.cookie("isLoggedin", true);
         const token = userAuthentication.createToken({ userId:userMsg.userId });
@@ -92,7 +94,7 @@ exports.loginUser = async function(req,res) {
     } catch (err) {
         // 处理错误
         console.error(err);
-        return res.json(new ResponseObj(2000, false, "登录失败"));
+        return res.json(new ResponseObj(2000, false, err.message));
     }
 };
 //个人信息处理
@@ -123,7 +125,7 @@ exports.publishMoments = async function(req,res){
             friendCircleImg.forEach((element,index)=>{
                 friendCircleImg[index] = imageProcessing.base64ToBinary(element);
             });
-        }
+        };
         //构建朋友圈对象
         let commentsObj = new Moric_Moments(req.userDate.userId,day.nowTime(),friendCircleCopy,friendCircleImg);
         let sql = "INSERT INTO `friend_circle` (publisher, publicTiming, friendCircleCopy, friendCirclePictures ) VALUES (?, ?, ?, ?);";
@@ -181,6 +183,10 @@ exports.getNewMoments = async function(req,res){
 exports.pickInformation = async function(req,res){
     try {
         const { userId } = req.body;
+        if(!userId){
+            console.log("userId出错:"+userId);
+            throw new Error("userId为空");
+        }
         let sql = "SELECT userId, userName, userProfile, userProfileType, userEmail, userAge, userSignature FROM users WHERE userId = ?;"
         const data = Moric_users.selectUser(sql,[userId]);
         data.then((data)=>{
@@ -218,9 +224,28 @@ exports.setComments = async function(req,res){
         if(!dataInfo){
             throw new Error(dataInfo);
         }
+        userAdditionalOperations.publishCommentsAdditionalActions(commentsObj);
         return res.json(new ResponseObj(1000,true,"发表成功",{}));
     } catch (error) {
         console.log("setCommentsErr:",error.message);
         return res.json(new ResponseObj(3100,false,"发布成功",error.message));
     }
+}
+//获取聊天记录
+exports.getChatRecords = async function(req,res){
+
+}
+//获取好友列表
+exports.getFriendList = async function(req,res){
+    const { userDate } = req;   
+    try {
+        const dataInfo = await MoricSocialPlatform_friends.getFriendList(userDate.userId);
+        if(!dataInfo){
+            throw new Error(dataInfo);
+        }    
+        return res.json(new ResponseObj(1000,true,"获取好友成功",dataInfo.body));
+    } catch (error) {
+       console.log(error.message);
+       return res.json(error.message);
+    };
 }
