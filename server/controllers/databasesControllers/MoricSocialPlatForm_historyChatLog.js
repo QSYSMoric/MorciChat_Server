@@ -20,10 +20,23 @@ connection.connect(err=>{
 });
 
 //获取聊天记录
-const getChatHistoryRecords = async function(){
-    
+const getChatHistoryRecords = async function(chatId){
+    if(!chatId){
+        return Promise.reject(new ResponseMessage(3100,false,"id不可为空",{}));
+    }
+    let sql = `
+        SELECT senderId, timing, text_content, img, dynamic_id FROM ${chatId} ORDER BY timing ASC;
+    `;
+    return new Promise((resolve,reject)=>{
+        connection.query(sql,(err,rows)=>{
+            if(err){
+                return reject(new ResponseMessage(3100,false,"查询出错",new Error(err)));
+            }
+            return resolve(new ResponseMessage(1000,true,"查询成功",rows));
+        });
+    });
 }
 
 module.exports = {
-
+    getChatHistoryRecords
 }

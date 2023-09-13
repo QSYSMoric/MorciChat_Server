@@ -93,7 +93,7 @@ exports.loginUser = async function(req,res) {
         return res.json(new ResponseObj(1000, true, "登录成功", {token}));
     } catch (err) {
         // 处理错误
-        console.error(err);
+        console.error("loginUser:"+err);
         return res.json(new ResponseObj(2000, false, err.message));
     }
 };
@@ -221,8 +221,8 @@ exports.setComments = async function(req,res){
     const commentsObj = new Moric_Comment(comment.user_id,day.nowTime(),comment.text_content,comment.comment_img,comment.dynamic_id);
     try {
         const dataInfo = await MoricSocialPlatForm_comments.postCommentsToMoment(commentsObj);
-        if(!dataInfo){
-            throw new Error(dataInfo);
+        if(!dataInfo.state){
+            throw new Error(dataInfo.alertMsg);
         }
         userAdditionalOperations.publishCommentsAdditionalActions(commentsObj);
         return res.json(new ResponseObj(1000,true,"发表成功",{}));
@@ -233,19 +233,32 @@ exports.setComments = async function(req,res){
 }
 //获取聊天记录
 exports.getChatRecords = async function(req,res){
-
+    try {
+        const { chatId } = req.body;
+        if(!chatId){
+            throw new Error("chatId为空");
+        }
+        const dataInfo = await Moric_Historychatlog.getChatHistoryRecords(chatId);
+        if(!dataInfo.state){
+            throw new Error(dataInfo.alertMsg);
+        }
+        return res.json(new ResponseObj(1000,true,"获取聊天记录成功",dataInfo.body));
+    } catch (error) {
+        console.log("getChatRecords:" + error.message);
+        return res.json(new ResponseObj(3100,false,"获取聊天记录失败",error.message));
+    }
 }
 //获取好友列表
 exports.getFriendList = async function(req,res){
     const { userDate } = req;   
     try {
         const dataInfo = await MoricSocialPlatform_friends.getFriendList(userDate.userId);
-        if(!dataInfo){
-            throw new Error(dataInfo);
+        if(!dataInfo.state){
+            throw new Error(dataInfo.alertMsg);
         }    
         return res.json(new ResponseObj(1000,true,"获取好友成功",dataInfo.body));
     } catch (error) {
-       console.log(error.message);
-       return res.json(error.message);
+        console.log("getFriendList:" + error.message);
+        return res.json(new ResponseObj(3100,false,"获取好友失败",error.message));
     };
 }

@@ -15,5 +15,6 @@ router.post('/pickInformation',userAuthentication.checkTokenMiddleware,userContr
 router.post('/getComments',userAuthentication.checkTokenMiddleware,userController.getComments);
 router.post('/setComments',userAuthentication.checkTokenMiddleware,userController.setComments);
 router.post('/getFriendList',userAuthentication.checkTokenMiddleware,userController.getFriendList);
+router.post('/getChatRecords',userAuthentication.checkTokenMiddleware,userController.getChatRecords);
 
 module.exports = router;
