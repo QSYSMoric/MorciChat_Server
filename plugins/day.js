@@ -12,5 +12,8 @@ module.exports = {
     },
     getHourMinute(){
         return dayjs().format("HH:mm");
+    },
+    getFullDateTime() {
+        return dayjs().format("YYYY-MM-DDTHH:mm:ss.SSSZ");
     }
 }

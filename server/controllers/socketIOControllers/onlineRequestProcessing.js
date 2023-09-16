@@ -11,15 +11,24 @@ exports.start = function(userId){
 };
 
 //用户发送消息
-exports.sendMessage = function(socket,chatMsg){
+exports.groupChatMessages = function(socket,chatMsg){
     chatMsg.senderId = socket.userDate.userId;
     chatMsg.timing = day.nowTime();
-    chatMsg.dynamic_id = Number(chatMsg.dynamic_id)
-    socket.to(chatMsg.dynamic_id).emit("channelMessages",chatMsg);
-    socket.emit("channelMessages",chatMsg);
+    chatMsg.dynamic_id = Number(chatMsg.dynamic_id);
+    socket.to(chatMsg.dynamic_id).emit("groupChatMessages",chatMsg);
+    socket.emit("groupChatMessages",chatMsg);
+    console.log(`${chatMsg.senderId}发送给${chatMsg.dynamic_id}`);
 }
 
-
+//私信消息
+exports.privateMessage = function(socket,chatMsg){
+    chatMsg.senderId = socket.userDate.userId;
+    chatMsg.timing = day.nowTime();
+    chatMsg.dynamic_id = Number(chatMsg.dynamic_id);
+    socket.to(chatMsg.dynamic_id).emit("privateMessage",chatMsg);
+    socket.emit("privateMessage",chatMsg);
+    console.log(`${chatMsg.senderId}发送给${chatMsg.dynamic_id}`);
+}
 
 //用户断开连接操作
 exports.disconnect = function(userId){

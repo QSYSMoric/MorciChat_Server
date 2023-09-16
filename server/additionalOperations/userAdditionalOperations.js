@@ -16,6 +16,7 @@ module.exports = {
             remark VARCHAR(255),
             friendStatus ENUM('pending', 'confirmed', 'removed') DEFAULT 'pending',
             chatHistory VARCHAR(255),
+            lastContacttime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id)
         );`;
         const operationResults = MoricSocialPlatform_friends.createFriendTable(createFriendListSql);

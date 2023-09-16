@@ -93,7 +93,7 @@ exports.loginUser = async function(req,res) {
         return res.json(new ResponseObj(1000, true, "登录成功", {token}));
     } catch (err) {
         // 处理错误
-        console.error("loginUser:"+err);
+        console.error("loginUser:"+err.message);
         return res.json(new ResponseObj(2000, false, err.message));
     }
 };
@@ -164,11 +164,13 @@ exports.getNewMoments = async function(req,res){
         Moric_Friendcircle.pagingCommentList(timing).then((data)=>{
             data.body.forEach((element)=>{
                 let { friendCirclePictures } = element;
-                friendCirclePictures = JSON.parse(friendCirclePictures)
-                friendCirclePictures.forEach((element,index)=>{
-                    friendCirclePictures[index] = imageProcessing.binaryToBase64(element.data);
-                });
-                element.friendCirclePictures = friendCirclePictures;
+                if(friendCirclePictures && friendCirclePictures.length){
+                    friendCirclePictures = JSON.parse(friendCirclePictures)
+                    friendCirclePictures.forEach((element,index)=>{
+                        friendCirclePictures[index] = imageProcessing.binaryToBase64(element.data);
+                    });
+                    element.friendCirclePictures = friendCirclePictures;
+                }
             });
             return res.json(new ResponseObj(1000,true,"请求成功",data.body));
         }).catch((err)=>{

@@ -2,12 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
+const ResponseObj = require("./plugins/responseMessage");
 
 //WebSocket服务器
 const socketWrapper = require('./server/utils/socketWrapper');
 const io = socketWrapper(server);
 // 挂载 io 到全局
 app.locals.io = io;
+app.locals.ResponseObj = ResponseObj;
 // 存储 io 对象到全局
 global.io = io;
 

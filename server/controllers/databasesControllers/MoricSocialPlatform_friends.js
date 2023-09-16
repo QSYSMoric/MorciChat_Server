@@ -74,7 +74,7 @@ const getFriendList = async function(userId){
     }
     return new Promise((resolve,reject)=>{
         let sql = `
-            SELECT friendId, remark, chatHistory, friendStatus
+            SELECT friendId, remark, chatHistory, friendStatus, lastContacttime
             FROM ${userId}friendlist
             WHERE friendStatus = 'confirmed';
         `;

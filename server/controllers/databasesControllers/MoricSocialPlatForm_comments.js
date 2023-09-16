@@ -59,7 +59,7 @@ const getCommentsById = async function(momentsId){
     });
 }
 
-//发表评论
+//获取最新的评论
 const postCommentsToMoment = async function(comment){
     if(!comment){
         return Promise.reject(new ResponseMessage(3100,false,"发生意料之外的错误",null));

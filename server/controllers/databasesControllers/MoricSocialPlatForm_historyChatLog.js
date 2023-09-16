@@ -25,7 +25,7 @@ const getChatHistoryRecords = async function(chatId){
         return Promise.reject(new ResponseMessage(3100,false,"id不可为空",{}));
     }
     let sql = `
-        SELECT senderId, timing, text_content, img, dynamic_id FROM ${chatId} ORDER BY timing ASC;
+        SELECT senderId, timing, text_content, img, dynamic_id, historyid FROM ${chatId} ORDER BY timing ASC;
     `;
     return new Promise((resolve,reject)=>{
         connection.query(sql,(err,rows)=>{

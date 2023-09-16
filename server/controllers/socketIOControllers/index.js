@@ -9,8 +9,12 @@ module.exports = (socket)=>{
     //用户加入公共频道
     socket.join(publicChatRoom);
     //处理用户发送的消息
-    socket.on("sendMessage",(chatMsg)=>{
-        onlineRequestProcessing.sendMessage(socket,chatMsg);
+    socket.on("groupChatMessages",(chatMsg)=>{
+        onlineRequestProcessing.groupChatMessages(socket,chatMsg);
+    });
+    //处理用户私信消息
+    socket.on("privateMessage",(chatMsg)=>{
+        onlineRequestProcessing.privateMessage(socket,chatMsg);
     });
 
     //用户断开与服务器的连接后删除这个用户
