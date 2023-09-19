@@ -1,5 +1,6 @@
 //路由数据的传递，目的：做到了路由信息和数据信息的分离
 const mysql = require('mysql');
+const ResponseObj = require('../../../plugins/responseMessage');
 //连接数据库
 let connection = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -72,7 +73,21 @@ const createUser = async function(sql,field){
     });
 }
 
+//记录用户的某些操作
+const preAddFriends = async function(sql,field) {
+    return new Promise((resolve, reject) => {
+        connection.query(sql, field, (err,rows) => {
+        if(err) {
+            console.log(err);
+            reject(new ResponseObj(3100, false, "添加失败"));
+        }
+            resolve(new ResponseObj(1000, true, "插入成功", rows));
+        });
+    });
+}
+
 module.exports = {
     selectUser,
-    createUser
+    createUser,
+    preAddFriends
 }

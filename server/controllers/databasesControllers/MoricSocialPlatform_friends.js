@@ -1,6 +1,7 @@
 //路由数据的传递，目的：做到了路由信息和数据信息的分离
 const mysql = require('mysql');
 const ResponseMessage = require("../../../plugins/responseMessage");
+const day = require("../../../plugins/day");
 //连接数据库
 let connection = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -67,7 +68,7 @@ const insertIntoFriend = async function(sql,field){
     });
 }
 
-//获取朋友圈列表
+//获取好友列表
 const getFriendList = async function(userId){
     if(!userId){
         return Promise.reject(new ResponseMessage(3100,false,"id不可为空",{}));
@@ -87,8 +88,51 @@ const getFriendList = async function(userId){
     });
 }
 
+//查询是否与该用户建立了好友关系
+const isItFriend = async function(userId,fridendId){
+    if(!userId || !fridendId){
+        return Promise.reject(new ResponseMessage(3100,false,"id不可为空",{}));
+    }
+    let sql = `
+        SELECT friendStatus
+        FROM ${userId}friendlist
+        WHERE friendId = ?;
+    `;
+    return new Promise((resolve,reject)=>{
+        connection.query(sql,[fridendId],(err,rows)=>{
+            if(err){
+                return reject(new ResponseMessage(3100,false,"你们不是好友",{}));
+            }
+            return resolve(new ResponseMessage(1000,true,"成功",rows));
+        })
+    });
+}
+
+//更新与好友的最后一次联系时间
+const updateLastContactTime = async function(userId,fridendId){
+    if(!userId || !fridendId){
+        return Promise.reject(new ResponseMessage(3100,false,"id不可为空",{}));
+    }
+    let now = day.nowTime();
+    let sql = `
+        UPDATE ${userId}friendlist
+        SET lastContactTime = ?
+        WHERE friendId = ?;
+    `;
+    return new Promise((resolve,reject)=>{
+        connection.query(sql,[now,fridendId],(err)=>{
+            if(err){
+                return reject(new ResponseMessage(3100,false,"数据库出错",{}));
+            }
+            return resolve(new ResponseMessage(1000,true,"成功",{ lastContacttime:now }));
+        })
+    });
+}   
+
 module.exports = {
     createFriendTable,
     insertIntoFriend,
-    getFriendList
+    getFriendList,
+    updateLastContactTime,
+    isItFriend
 }

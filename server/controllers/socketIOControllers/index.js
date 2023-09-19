@@ -16,7 +16,10 @@ module.exports = (socket)=>{
     socket.on("privateMessage",(chatMsg)=>{
         onlineRequestProcessing.privateMessage(socket,chatMsg);
     });
-
+    //处理用户添加好友操作
+    socket.on("addNewFiendToServe",(friendId)=>{
+        onlineRequestProcessing.addNewFiendToServe(socket,friendId);
+    });
     //用户断开与服务器的连接后删除这个用户
     socket.on("disconnect",() => {
         onlineRequestProcessing.disconnect(socket.userDate.userId);

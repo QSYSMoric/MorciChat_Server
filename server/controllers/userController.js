@@ -264,3 +264,40 @@ exports.getFriendList = async function(req,res){
         return res.json(new ResponseObj(3100,false,"获取好友失败",error.message));
     };
 }
+//更新用户与好友最后一次联系的时间
+exports.updateLastContactTime = async function(req,res){
+    const { userDate } = req;
+    const { friendId } = req.body;
+    try {
+        const dataInfo = await MoricSocialPlatform_friends.isItFriend(userDate.userId,friendId);
+        if(!dataInfo.state){
+            throw Error(dataInfo.alertMsg);
+        }
+        //如果为好友关系
+        if(dataInfo.body[0].friendStatus === "confirmed"){
+            const databaseInfo = await MoricSocialPlatform_friends.updateLastContactTime(userDate.userId,friendId);
+            if(!dataInfo.state){
+                throw Error(dataInfo.alertMsg);
+            }
+            return res.json(new ResponseObj(1000,true,"成功",databaseInfo.body));
+        }
+    } catch (error) {
+        console.log("updateLastContactTime:" + error);
+        return res.json(new ResponseObj(3100,false,error.message,{lastContacttime:day.nowTime()}));
+    }
+}
+//获取好友申请列表
+exports.getFriendApplicationList = async function(req,res){
+    try {
+        const { userDate } = req;
+        const sql = "SELECT userId, friendId, status FROM operation WHERE userId = ? OR friendId = ?;";
+        const dataInfo = await Moric_users.preAddFriends(sql,[userDate.userId,userDate.userId]);
+        if(!dataInfo.state){
+            throw new Error("获取失败");
+        }
+        return res.json(new ResponseObj(1000,true,"成功",dataInfo.body));
+    } catch (error) {
+        console.log("getFriendApplicationList" + error.message);
+        return res.json(new ResponseObj(3100,false,"获取失败"));
+    }
+}
