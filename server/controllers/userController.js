@@ -196,11 +196,11 @@ exports.pickInformation = async function(req,res){
             let userInfo = new Moric_UserInfo(userMsg.userId,userMsg.userName,userMsg.userProfile,userMsg.userProfileType,userMsg.userEmail,userMsg.userAge,userMsg.userSignature);
             return res.json(new ResponseObj(1000, true, "成功",userInfo));
         }).catch((err)=>{
-            throw new Error(err.message);
+            throw new Error(err.alertMsg);
         });
     } catch (error) {
         // 处理错误
-        console.log("pickInformationErr:"+error.message);
+        console.log("pickInformationErr:" + error);
         return res.json(new ResponseObj(2000, false, error.message));
     }
 }
@@ -246,7 +246,7 @@ exports.getChatRecords = async function(req,res){
         }
         return res.json(new ResponseObj(1000,true,"获取聊天记录成功",dataInfo.body));
     } catch (error) {
-        console.log("getChatRecords:" + error.message);
+        console.log(error);
         return res.json(new ResponseObj(3100,false,"获取聊天记录失败",error.message));
     }
 }
@@ -290,7 +290,7 @@ exports.updateLastContactTime = async function(req,res){
 exports.getFriendApplicationList = async function(req,res){
     try {
         const { userDate } = req;
-        const sql = "SELECT userId, friendId, status FROM operation WHERE userId = ? OR friendId = ?;";
+        const sql = "SELECT userId, friendId, status, illustrate FROM operation WHERE (userId = ? OR friendId = ?)";
         const dataInfo = await Moric_users.preAddFriends(sql,[userDate.userId,userDate.userId]);
         if(!dataInfo.state){
             throw new Error("获取失败");

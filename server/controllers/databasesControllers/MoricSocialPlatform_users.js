@@ -79,9 +79,9 @@ const preAddFriends = async function(sql,field) {
         connection.query(sql, field, (err,rows) => {
         if(err) {
             console.log(err);
-            reject(new ResponseObj(3100, false, "添加失败"));
+            reject(new ResponseObj(3100, false, "操作失败"));
         }
-            resolve(new ResponseObj(1000, true, "插入成功", rows));
+            resolve(new ResponseObj(1000, true, "操作成功", rows));
         });
     });
 }

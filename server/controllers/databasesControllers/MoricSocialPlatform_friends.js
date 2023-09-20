@@ -50,6 +50,7 @@ const insertIntoFriend = async function(sql,field){
         connection.query(sql,field,function(err,rows){
             //插入数据失败后的结果
             if(err){
+                console.log(err);
                 return reject({ 
                     code:"3100",
                     alert:'添加好友失败:' + err,

@@ -24,10 +24,10 @@ module.exports = {
             //创建成功后将他加入到群聊频道中
             const timeing = nowTime.nowTime();
             let inseretInToGroupChat = `
-                INSERT INTO ${userId}FriendList (userId,friendId,createdAt,chatHistory,friendStatus) VALUES (?,?,?,?,?);
+                INSERT INTO ${userId}FriendList (userId,friendId,createdAt,chatHistory,friendStatus,lastContacttime) VALUES (?,?,?,?,?,?);
             `;
             const chatHistoryId = sortAndJoin(userId,90000);
-            const insertIntoFriend = MoricSocialPlatform_friends.insertIntoFriend(inseretInToGroupChat,[userId,90000,timeing,chatHistoryId,"confirmed"]);
+            const insertIntoFriend = MoricSocialPlatform_friends.insertIntoFriend(inseretInToGroupChat,[userId,90000,timeing,chatHistoryId,"confirmed",timeing]);
             insertIntoFriend.then((data)=>{
                 console.log(data);
             }).catch((err)=>{

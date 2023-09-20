@@ -20,6 +20,11 @@ module.exports = (socket)=>{
     socket.on("addNewFiendToServe",(friendId)=>{
         onlineRequestProcessing.addNewFiendToServe(socket,friendId);
     });
+    //用户同意好友请求
+    socket.on("operateFriendRequests",(friendOperation) => {
+        onlineRequestProcessing.operateFriendRequests(socket,friendOperation);
+    });
+
     //用户断开与服务器的连接后删除这个用户
     socket.on("disconnect",() => {
         onlineRequestProcessing.disconnect(socket.userDate.userId);
