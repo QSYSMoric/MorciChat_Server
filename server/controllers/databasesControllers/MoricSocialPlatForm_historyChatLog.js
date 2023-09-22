@@ -61,7 +61,40 @@ const craeteChatHistory = async function(historyId){
     });
 }
 
+//记录历史聊天数据
+const recordChatInformation = async function(chatMsg){
+    return new Promise((resolve,reject)=>{
+        if(!chatMsg || !chatMsg.historyId){
+           return reject(new ResponseMessage(2100,false,"参数错误"));
+        }
+        let sql = `INSERT INTO ${chatMsg.historyId} (senderId, timing, text_content, img, dynamic_id, historyId)
+        VALUES (? ,?, ?, ?, ?, ?);`;
+        connection.query(sql,[chatMsg.senderId,chatMsg.timing,chatMsg.text_content,chatMsg.img,chatMsg.dynamic_id,chatMsg.historyId],(err)=>{
+            if(err){
+               return reject(new ResponseMessage(3100,false,"对方不是你的好友",err));
+            }
+            return resolve(new ResponseMessage(1000,true,"成功"));
+        });
+
+    });
+}
+
+//
+const isHaved = async function(historyId){
+    let isHavedSql = `SELECT 1 FROM information_schema.tables WHERE table_name = '${historyId}' LIMIT 1;`;
+    return new Promise((resolve,reject)=>{
+        connection.query(isHavedSql,(err,rows)=>{
+            if(err){
+                reject(new ResponseMessage(3100,false,"查询出错",err));
+            }
+            resolve(new ResponseMessage(1000,true,"查询成功",rows[0]));
+        });
+    })
+}
+
 module.exports = {
     getChatHistoryRecords,
-    craeteChatHistory
+    craeteChatHistory,
+    recordChatInformation,
+    isHaved
 }

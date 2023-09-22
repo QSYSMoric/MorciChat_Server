@@ -24,6 +24,7 @@ const selectUser = async function(sql,field){
         connection.query(sql,field,function(err,rows){
             if(err){
                 //没有查询到用户账户   
+                console.log(err);
                 return reject({ 
                     code:"3100",
                     alert:'查询失败:' + err,

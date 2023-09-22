@@ -16,21 +16,35 @@ exports.start = function(userId){
     onlineUsers.addUser(userId);
 };
 
-//用户发送消息
+//群聊消息
 exports.groupChatMessages = function(socket,chatMsg){
     chatMsg.senderId = socket.userDate.userId;
     chatMsg.timing = day.nowTime();
     chatMsg.dynamic_id = Number(chatMsg.dynamic_id);
+    //如果用户是好友那么保存历史聊天记录
+    Moric_Historychatlog.recordChatInformation(chatMsg).then((data)=>{
+        console.log(data);
+    }).catch((err)=>{
+        console.log(err);
+    });
     socket.to(chatMsg.dynamic_id).emit("groupChatMessages",chatMsg);
     socket.emit("groupChatMessages",chatMsg);
     console.log(`${chatMsg.senderId}发送给${chatMsg.dynamic_id}`);
 }
 
 //私信消息
-exports.privateMessage = function(socket,chatMsg){
+exports.privateMessage = function(socket,chatMsg,friendStatus){
     chatMsg.senderId = socket.userDate.userId;
     chatMsg.timing = day.nowTime();
     chatMsg.dynamic_id = Number(chatMsg.dynamic_id);
+    if(friendStatus === "confirmed"){
+        //如果用户是好友那么保存历史聊天记录
+        Moric_Historychatlog.recordChatInformation(chatMsg).then((data)=>{
+            console.log(data);
+        }).catch((err)=>{
+            console.log(err);
+        });
+    }
     socket.to(chatMsg.dynamic_id).emit("privateMessage",chatMsg);
     socket.emit("privateMessage",chatMsg);
     console.log(`${chatMsg.senderId}发送给${chatMsg.dynamic_id}`);
@@ -49,11 +63,13 @@ exports.addNewFiendToServe = async function(socket,friendId){
         const sql = "INSERT INTO operation (userId, friendId, illustrate) VALUES (?, ?, ?);";
         let premiseDataInfo = await Moric_users.preAddFriends(premiseSql,[friendRequest.userId,friendRequest.friendId]);
         if(premiseDataInfo.body[0].total){
-            return socket.emit("addNewFiendToServe",new ResponseObj(3000,false,"你已经发送好友请求"));
+            socket.emit("addNewFiendToServe",new ResponseObj(3000,false,"他已经是你的好友"));
+            throw new Error(premiseDataInfo.body[0].total);
         }
         let dataInfo = await Moric_users.preAddFriends(sql,[friendRequest.userId,friendRequest.friendId,friendRequest.illustrate]);
         if(!dataInfo.state){
-            return socket.emit("addNewFiendToServe",new ResponseObj(3100,false,"添加好友失败"));
+            socket.emit("addNewFiendToServe",new ResponseObj(3100,false,"添加好友失败"));
+            throw new Error(dataInfo.dataInfo);
         }
         //若用户在线发送好友请求至对方邮箱
         socket.to(friendId).emit("friendRequest",friendRequest);
@@ -90,6 +106,16 @@ exports.operateFriendRequests = async function(socket,friendOperation){
         }else{
             //构建历史聊天仓库
             const chatHistoryId = sortAndJoin(friendOperation.userId,friendOperation.friendId);
+            if(!chatHistoryId){
+                return socket.emit("operateFriendRequests",new ResponseObj(2100,false,"参数错误"));
+            }
+            let isHavedInfo = await Moric_Historychatlog.isHaved(chatHistoryId);
+            if(isHavedInfo.body[1]){
+                //如果有那么便是操作表没有更新操作需要更新操作表
+                const approvedSql = "UPDATE operation SET status = 'Approved' WHERE userId = ? AND friendId = ?;";
+                Moric_users.preAddFriends(approvedSql,[friendOperation.userId,friendOperation.friendId]);
+                return socket.emit("operateFriendRequests",new ResponseObj(2000,false,"对方已经是你的好友"));
+            }
             //获取现在的时间
             const timeing = day.nowTime();
             //同意好友请求
@@ -105,7 +131,6 @@ exports.operateFriendRequests = async function(socket,friendOperation){
                 const approvedSql = "UPDATE operation SET status = 'Approved' WHERE userId = ? AND friendId = ?;";
                 Moric_users.preAddFriends(approvedSql,[friendOperation.userId,friendOperation.friendId]);
                 Moric_Historychatlog.craeteChatHistory(chatHistoryId);
-                console.log(friendOperation.userId)
                 socket.to(friendOperation.userId).emit("friendsThrough",friendOperation);
                 return socket.emit("operateFriendRequests",friendOperation);
             }).catch((err)=>{

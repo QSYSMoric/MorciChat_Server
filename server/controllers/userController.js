@@ -190,18 +190,17 @@ exports.pickInformation = async function(req,res){
             throw new Error("userId为空");
         }
         let sql = "SELECT userId, userName, userProfile, userProfileType, userEmail, userAge, userSignature FROM users WHERE userId = ?;"
-        const data = Moric_users.selectUser(sql,[userId]);
-        data.then((data)=>{
-            const { userMsg } = data;
-            let userInfo = new Moric_UserInfo(userMsg.userId,userMsg.userName,userMsg.userProfile,userMsg.userProfileType,userMsg.userEmail,userMsg.userAge,userMsg.userSignature);
-            return res.json(new ResponseObj(1000, true, "成功",userInfo));
-        }).catch((err)=>{
-            throw new Error(err.alertMsg);
-        });
+        const data = await Moric_users.selectUser(sql,[userId]);
+        if(!data.state){
+            throw new Error("没有找到该用户");
+        }
+        const { userMsg } = data;
+        let userInfo = new Moric_UserInfo(userMsg.userId,userMsg.userName,userMsg.userProfile,userMsg.userProfileType,userMsg.userEmail,userMsg.userAge,userMsg.userSignature);
+        return res.json(new ResponseObj(1000, true, "成功",userInfo));
     } catch (error) {
-        // 处理错误
+        // 处理错误Qh*ApnDdS4Vi
         console.log("pickInformationErr:" + error);
-        return res.json(new ResponseObj(2000, false, error.message));
+        return res.json(new ResponseObj(2000, false, "没有该用户",error));
     }
 }
 //获取评论列表
@@ -290,7 +289,7 @@ exports.updateLastContactTime = async function(req,res){
 exports.getFriendApplicationList = async function(req,res){
     try {
         const { userDate } = req;
-        const sql = "SELECT userId, friendId, status, illustrate FROM operation WHERE (userId = ? OR friendId = ?)";
+        const sql = "SELECT userId, friendId, status, illustrate FROM operation WHERE (userId = ? OR friendId = ?) && status = 'Pending' ";
         const dataInfo = await Moric_users.preAddFriends(sql,[userDate.userId,userDate.userId]);
         if(!dataInfo.state){
             throw new Error("获取失败");

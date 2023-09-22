@@ -13,8 +13,8 @@ module.exports = (socket)=>{
         onlineRequestProcessing.groupChatMessages(socket,chatMsg);
     });
     //处理用户私信消息
-    socket.on("privateMessage",(chatMsg)=>{
-        onlineRequestProcessing.privateMessage(socket,chatMsg);
+    socket.on("privateMessage",(chatMsg,friendStatus)=>{
+        onlineRequestProcessing.privateMessage(socket,chatMsg,friendStatus);
     });
     //处理用户添加好友操作
     socket.on("addNewFiendToServe",(friendId)=>{
