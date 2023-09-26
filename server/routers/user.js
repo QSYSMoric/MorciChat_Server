@@ -18,5 +18,6 @@ router.post('/getFriendList',userAuthentication.checkTokenMiddleware,userControl
 router.post('/getChatRecords',userAuthentication.checkTokenMiddleware,userController.getChatRecords);
 router.post('/updateLastContactTime',userAuthentication.checkTokenMiddleware,userController.updateLastContactTime);
 router.post('/getFriendApplicationList',userAuthentication.checkTokenMiddleware,userController.getFriendApplicationList);
-
+router.post('/changePersonalInformation',userAuthentication.checkTokenMiddleware,userController.changePersonalInformation);
+router.post('/getMomentsMy',userAuthentication.checkTokenMiddleware,userController.getMomentsMy);
 module.exports = router;

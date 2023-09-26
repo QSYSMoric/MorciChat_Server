@@ -87,8 +87,22 @@ const preAddFriends = async function(sql,field) {
     });
 }
 
+//更新用户信息
+const updataUserMsg = async function(sql,field){
+    return new Promise((resolve, reject) => {
+        connection.query(sql, field, (err,rows) => {
+        if(err) {
+            console.log(err);
+            reject(new ResponseObj(3100, false, "更新失败"));
+        }
+            resolve(new ResponseObj(1000, true, "更新成功", rows));
+        });
+    });    
+}
+
 module.exports = {
     selectUser,
     createUser,
-    preAddFriends
+    preAddFriends,
+    updataUserMsg
 }

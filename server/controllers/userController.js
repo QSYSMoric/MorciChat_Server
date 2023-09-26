@@ -181,6 +181,30 @@ exports.getNewMoments = async function(req,res){
         return res.json(new ResponseObj(2000,false,"发生了意料之外的错误"),err.message); 
     }
 }
+//获取本用户的信息
+exports.getMomentsMy = async function(req,res){
+    try {
+        const { userDate } = req;
+        Moric_Friendcircle.getMomentsMy(userDate.userId).then((data)=>{
+            data.body.forEach((element)=>{
+                let { friendCirclePictures } = element;
+                if(friendCirclePictures && friendCirclePictures.length){
+                    friendCirclePictures = JSON.parse(friendCirclePictures)
+                    friendCirclePictures.forEach((element,index)=>{
+                        friendCirclePictures[index] = imageProcessing.binaryToBase64(element.data);
+                    });
+                    element.friendCirclePictures = friendCirclePictures;
+                }
+            });
+            return res.json(new ResponseObj(1000,true,"请求成功",data.body));
+        }).catch((err)=>{
+            throw err;
+        });
+    } catch (error) {
+        console.log("getMomentsMy出错:" + error.message);
+        return res.json(new ResponseObj(2000,false,"发生了意料之外的错误"),error.message);         
+    }
+}
 //获取用户信息
 exports.pickInformation = async function(req,res){
     try {
@@ -189,7 +213,7 @@ exports.pickInformation = async function(req,res){
             console.log("userId出错:"+userId);
             throw new Error("userId为空");
         }
-        let sql = "SELECT userId, userName, userProfile, userProfileType, userEmail, userAge, userSignature FROM users WHERE userId = ?;"
+        let sql = "SELECT userId, userName, userProfile, userProfileType, userEmail, userAge, userSignature, userCreateAt FROM users WHERE userId = ?;"
         const data = await Moric_users.selectUser(sql,[userId]);
         if(!data.state){
             throw new Error("没有找到该用户");
@@ -298,5 +322,31 @@ exports.getFriendApplicationList = async function(req,res){
     } catch (error) {
         console.log("getFriendApplicationList" + error.message);
         return res.json(new ResponseObj(3100,false,"获取失败"));
+    }
+}
+//处理更改个人信息
+exports.changePersonalInformation = async function(req,res){
+    try {
+        const { userDate } = req;
+        const { selfMsg } = req.body;
+        //先转头像格式
+        //如果用户有头像
+        if(selfMsg.userProfile) {
+            selfMsg.userProfile = imageProcessing.base64ToBinary(selfMsg.userProfile);
+        }
+        const entries = Object.entries(selfMsg);
+        entries.forEach(async (element)=>{
+            if(element[1]){
+                let sql = `UPDATE users SET ${element[0]} = ? WHERE userId = ${userDate.userId};`;
+                let userInfo = await Moric_users.updataUserMsg(sql,[element[1]]);
+                console.log(userInfo);
+                if(!userInfo.state){
+                    throw new Error("更改失败");
+                }
+            }
+        });
+        return res.json(new ResponseObj(1000,true,"更改成功"));
+    } catch (error) {
+        return res.json(new ResponseObj(3100,false,"更改失败"));
     }
 }

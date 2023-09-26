@@ -68,8 +68,28 @@ const pagingCommentList = async function(timing){
     })
 }
 
+//查询某个用户发布的文章
+const getMomentsMy = async function(userId){
+    if(!userId){
+        return Promise.reject(new responseMessage(3100, false, "发生错误", null));
+    };
+    let sql = `
+    SELECT publishId, publisher, publicTiming, friendCircleCopy, friendCirclePictures, commentInformation FROM friend_circle
+    WHERE publisher = ?
+    ORDER BY publicTiming DESC`;
+    return new Promise((resolve, reject)=>{
+        connection.query(sql,[userId],function(err,rows){
+            if(err){
+                return reject(new responseMessage(3100, false, err.message, null));
+            }
+            return resolve(new responseMessage(1000,true,"查询成功",rows));
+        });
+    })
+}
+
 module.exports = {
     createFriendcircle,
     installationComment,
-    pagingCommentList
+    pagingCommentList,
+    getMomentsMy
 }
